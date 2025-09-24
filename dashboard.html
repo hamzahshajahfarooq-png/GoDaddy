@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dashboard — Domainly</title>
+<style>
+  :root{--bg:#051021;--card:#071827;--muted:#94a3b8;--accent:#7c3aed}
+  body{margin:0;font-family:Inter, system-ui, -apple-system, Roboto, Arial;color:#e7f0ff;background:linear-gradient(180deg,#031220,#061827)}
+  .wrap{max-width:1000px;margin:28px auto;padding:18px}
+  header{display:flex;align-items:center;justify-content:space-between}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.6)}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{padding:12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.02)}
+  th{color:var(--muted);font-weight:700;font-size:13px}
+  td .pill{padding:6px 8px;border-radius:8px;font-weight:700}
+  .active{background:linear-gradient(90deg,#10b981,#34d399);color:#051521}
+  .expired{background:linear-gradient(90deg,#ef4444,#f97316);color:white}
+  .controls{display:flex;gap:8px}
+  button{padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+  .link{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  @media (max-width:720px){table,thead,tbody,th,td,tr{display:block} th{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div style="font-weight:800;font-size:20px;cursor:pointer" onclick="goTo('index.html')">Domainly</div>
+      <div style="color:var(--muted);font-size:13px">Your domains & account</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onclick="goTo('results.html')" class="link">Search</button>
+      <button onclick="goTo('checkout.html')" class="link">Checkout</button>
+    </div>
+  </header>
+
+  <main style="margin-top:18px">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0">Registered domains</h3>
+        <div class="smallmuted" id="registeredCount"></div>
+      </div>
+
+      <div id="domainsList" style="margin-top:12px"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+  function goTo(url){ window.location.href = url; }
+
+  function loadRegistered(){
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    document.getElementById('registeredCount').textContent = regs.length + ' domains';
+    const container = document.getElementById('domainsList');
+    if(!regs.length){
+      container.innerHTML = '<div style="color:var(--muted)">No registered domains yet. Search and add to cart to simulate purchase.</div>';
+      return;
+    }
+    // build table
+    let html = '<table><thead><tr><th>Domain</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    regs.forEach((r,idx)=>{
+      const expires = new Date(r.expires);
+      const now = new Date();
+      const status = expires > now ? 'active' : 'expired';
+      html += `<tr>
+        <td style="font-weight:800">${r.domain}</td>
+        <td>${expires.toLocaleDateString()}</td>
+        <td><span class="pill ${status}">${status.toUpperCase()}</span></td>
+        <td>
+          <div class="controls">
+            <button onclick="renewDomain(${idx})">Renew</button>
+            <button onclick="transferDomain(${idx})" class="link">Transfer</button>
+            <button onclick="removeDomain(${idx})" style="background:transparent;border:1px solid rgba(255,255,255,0.04)">Remove</button>
+          </div>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function renewDomain(i){
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    const r = regs[i];
+    const current = new Date(r.expires);
+    // add 1 year (mock)
+    current.setFullYear(current.getFullYear()+1);
+    r.expires = current.toISOString();
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    alert(r.domain + ' renewed for 1 year. New expiry: ' + current.toLocaleDateString());
+    loadRegistered();
+  }
+  function transferDomain(i){
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    const r = regs[i];
+    r.status = 'transferring';
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    alert('Transfer initiated for ' + r.domain + ' (mock).');
+    loadRegistered();
+  }
+  function removeDomain(i){
+    if(!confirm('Remove domain from your account? This is a demo and will delete the mock entry.')) return;
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    const removed = regs.splice(i,1)[0];
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    alert(removed.domain + ' removed from your account.');
+    loadRegistered();
+  }
+
+  // ensure demo presence as in index
+  (function init(){
+    if(!localStorage.getItem('domainly_registered')){
+      const demo = [
+        {domain:'example.com',expires: new Date(Date.now()+1000*60*60*24*90).toISOString(),status:'active'},
+        {domain:'coolsite.io',expires: new Date(Date.now()+1000*60*60*24*365).toISOString(),status:'active'}
+      ];
+      localStorage.setItem('domainly_registered', JSON.stringify(demo));
+    }
+    loadRegistered();
+  })();
+</script>
+</body>
+</html>
