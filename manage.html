@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Manage Domains — Domainly</title>
+<style>
+  :root{--bg:#031022;--card:#071827;--muted:#94a3b8;--accent:#7c3aed}
+  body{margin:0;font-family:Inter, system-ui, -apple-system, Roboto, Arial;color:#e7f0ff;background:linear-gradient(180deg,#021220,#061827)}
+  .wrap{max-width:1000px;margin:28px auto;padding:18px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:18px;border-radius:12px}
+  .row{display:flex;gap:12px;align-items:center}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 260px;gap:18px}
+  .control{display:flex;flex-direction:column;gap:8px}
+  input,select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+  button{padding:10px;border-radius:8px;border:none;cursor:pointer}
+  .danger{background:linear-gradient(90deg,#ef4444,#f97316);color:white}
+  .primary{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#051521}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div>
+      <div style="font-weight:800;font-size:20px;cursor:pointer" onclick="goTo('index.html')">Domainly</div>
+      <div class="muted">Manage domain settings</div>
+    </div>
+    <div>
+      <button onclick="goTo('dashboard.html')" style="background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px">Back to Dashboard</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3 style="margin:0 0 8px">Domain actions</h3>
+      <div class="muted">Pick a domain to perform renewals, transfers or deletions (mock functions).</div>
+
+      <div style="margin-top:12px">
+        <select id="domainSelect" onchange="populateDomainDetails()"></select>
+      </div>
+
+      <div id="detailsBlock" style="margin-top:12px"></div>
+
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="primary" onclick="renewSelected()">Renew 1 year</button>
+        <button onclick="transferSelected()">Transfer</button>
+        <button class="danger" onclick="removeSelected()">Remove</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 8px">Bulk operations</h3>
+      <div class="muted">Simulate bulk renew or remove for demo domains.</div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-direction:column">
+        <button onclick="bulkRenew()">Renew all (1 yr)</button>
+        <button class="danger" onclick="bulkRemove()">Remove all (demo)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function goTo(url){ window.location.href = url; }
+
+  function loadDomains(){
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    const select = document.getElementById('domainSelect');
+    select.innerHTML = '';
+    regs.forEach((r,idx)=> {
+      const opt = document.createElement('option');
+      opt.value = idx; opt.textContent = r.domain;
+      select.appendChild(opt);
+    });
+    if(regs.length) populateDomainDetails();
+    else document.getElementById('detailsBlock').innerHTML = '<div class="muted">No domains found — add via search.</div>';
+  }
+
+  function populateDomainDetails(){
+    const idx = parseInt(document.getElementById('domainSelect').value);
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    if(!regs[idx]) return;
+    const r = regs[idx];
+    document.getElementById('detailsBlock').innerHTML = `<div style="margin-top:8px">
+      <div><strong>Domain:</strong> ${r.domain}</div>
+      <div><strong>Expires:</strong> ${new Date(r.expires).toLocaleString()}</div>
+      <div><strong>Status:</strong> ${r.status||'active'}</div>
+    </div>`;
+  }
+
+  function renewSelected(){
+    const idx = parseInt(document.getElementById('domainSelect').value);
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    if(!regs[idx]) return alert('No domain selected');
+    const current = new Date(regs[idx].expires); current.setFullYear(current.getFullYear()+1);
+    regs[idx].expires = current.toISOString();
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    alert('Renewed ' + regs[idx].domain);
+    loadDomains();
+  }
+
+  function transferSelected(){
+    const idx = parseInt(document.getElementById('domainSelect').value);
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    regs[idx].status = 'transferring';
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    alert('Transfer initiated (mock).');
+    loadDomains();
+  }
+
+  function removeSelected(){
+    if(!confirm('Remove this domain from your account (demo)?')) return;
+    const idx = parseInt(document.getElementById('domainSelect').value);
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    const removed = regs.splice(idx,1)[0];
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    alert(removed.domain + ' removed.');
+    loadDomains();
+  }
+
+  function bulkRenew(){
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    regs.forEach(r=>{
+      const d = new Date(r.expires); d.setFullYear(d.getFullYear()+1); r.expires = d.toISOString();
+    });
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    alert('All domains renewed for 1 year (mock).');
+    loadDomains();
+  }
+
+  function bulkRemove(){
+    if(!confirm('Remove all demo domains?')) return;
+    localStorage.setItem('domainly_registered', JSON.stringify([]));
+    alert('All demo domains removed.');
+    loadDomains();
+  }
+
+  (function init(){ if(!localStorage.getItem('domainly_registered')) { localStorage.setItem('domainly_registered', JSON.stringify([{domain:'example.com',expires:new Date(Date.now()+1000*60*60*24*90).toISOString(),status:'active'}])); } loadDomains(); })();
+</script>
+</body>
+</html>
