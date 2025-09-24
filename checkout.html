@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Checkout — Domainly</title>
+<style>
+  :root{--bg:#041226;--card:#071827;--muted:#94a3b8;--accent:#7c3aed}
+  body{margin:0;font-family:Inter, system-ui, -apple-system, Roboto, Arial;color:#e7f0ff;background:linear-gradient(180deg,#021220,#061827)}
+  .wrap{max-width:1000px;margin:28px auto;padding:18px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:18px;border-radius:12px}
+  .cart-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:rgba(255,255,255,0.015);margin-top:10px}
+  .muted{color:var(--muted)}
+  button{padding:10px;border-radius:8px;border:none;cursor:pointer}
+  .primary{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#051521;font-weight:800}
+  .danger{background:linear-gradient(90deg,#ef4444,#f97316);color:white}
+  .actions{display:flex;gap:8px}
+  input{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;width:100%}
+  @media (max-width:720px){.cart-item{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div>
+      <div style="font-weight:800;font-size:20px;cursor:pointer" onclick="goTo('index.html')">Domainly</div>
+      <div class="muted">Secure your domains</div>
+    </div>
+    <div>
+      <button onclick="goTo('dashboard.html')" style="background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px">Back</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <h3 style="margin:0">Cart</h3>
+    <div id="cartList" style="margin-top:12px"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px">
+      <div style="max-width:520px">
+        <div class="muted" style="margin-bottom:8px">Billing details (mock)</div>
+        <input id="email" type="email" placeholder="Email address" />
+      </div>
+      <div style="text-align:right">
+        <div class="muted">Total</div>
+        <div id="totalPrice" style="font-weight:800;font-size:18px">$0.00</div>
+        <div style="margin-top:8px">
+          <button class="primary" onclick="checkout()">Proceed to mock payment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function goTo(url){ window.location.href = url; }
+
+  function loadCart(){
+    const cart = JSON.parse(localStorage.getItem('domainly_cart')||'[]');
+    const container = document.getElementById('cartList');
+    if(!cart.length){
+      container.innerHTML = '<div class="muted">Your cart is empty. Search for domains to add them here.</div>';
+      document.getElementById('totalPrice').textContent = '$0.00';
+      return;
+    }
+    let total = 0;
+    container.innerHTML = '';
+    cart.forEach((c,idx)=>{
+      total += c.price || 12.99;
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `<div><div style="font-weight:800">${c.domain}</div><div class="muted">Registration — 1 year</div></div><div style="display:flex;gap:8px;align-items:center"><div style="font-weight:800">$${(c.price||12.99).toFixed(2)}</div><div class="actions"><button onclick="removeFromCart(${idx})" style="background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px">Remove</button></div></div>`;
+      container.appendChild(div);
+    });
+    document.getElementById('totalPrice').textContent = '$' + total.toFixed(2);
+  }
+
+  function removeFromCart(i){
+    const cart = JSON.parse(localStorage.getItem('domainly_cart')||'[]');
+    const removed = cart.splice(i,1)[0];
+    localStorage.setItem('domainly_cart', JSON.stringify(cart));
+    alert(removed.domain + ' removed from cart.');
+    loadCart();
+  }
+
+  function checkout(){
+    const cart = JSON.parse(localStorage.getItem('domainly_cart')||'[]');
+    const email = document.getElementById('email').value.trim();
+    if(!cart.length){ alert('Cart is empty.'); return; }
+    if(!email || !email.includes('@')){ alert('Please enter a valid email.'); return; }
+
+    // simulate "purchase": move cart domains to registered list (mock)
+    const regs = JSON.parse(localStorage.getItem('domainly_registered')||'[]');
+    const now = new Date();
+    cart.forEach(c=>{
+      regs.push({domain:c.domain, expires: new Date(now.getTime()+1000*60*60*24*365).toISOString(), status:'active'});
+    });
+    localStorage.setItem('domainly_registered', JSON.stringify(regs));
+    localStorage.setItem('domainly_cart', JSON.stringify([]));
+    alert('Mock purchase complete. Domains registered to ' + email + '.');
+    goTo('dashboard.html');
+  }
+
+  (function init(){ if(!localStorage.getItem('domainly_cart')) localStorage.setItem('domainly_cart', JSON.stringify([])); loadCart(); })();
+</script>
+</body>
+</html>
