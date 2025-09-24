@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Domainly — Search & Register Domains</title>
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1220; --muted:#94a3b8; --accent:#7c3aed; --glass: rgba(255,255,255,0.04);
+    --success:#10b981; --danger:#ef4444; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:
+      radial-gradient(800px 400px at 10% 10%, rgba(124,58,237,0.08), transparent),
+      linear-gradient(180deg, #071327 0%, #071a2b 45%, #051021 100%);
+    color:#e6eef8; -webkit-font-smoothing:antialiased;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between; padding:28px 36px;
+  }
+  .logo{display:flex; gap:12px; align-items:center; cursor:pointer}
+  .logo .mark{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#2dd4bf);display:grid;place-items:center;font-weight:700;color:#051021}
+  nav{display:flex; gap:18px; align-items:center}
+  nav a{color:var(--muted); text-decoration:none; font-weight:600}
+  .container{max-width:1100px;margin:18px auto;padding:20px}
+  .hero{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius:14px;padding:28px;display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:center;box-shadow:0 6px 30px rgba(2,6,23,0.6)
+  }
+  .search-box{background:var(--card);border-radius:12px;padding:22px}
+  h1{margin:0 0 8px;font-size:26px}
+  p.lead{margin:0 0 18px;color:var(--muted)}
+  .search-row{display:flex; gap:10px}
+  input[type="text"]{
+    flex:1;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);
+    background:var(--glass); color:inherit; outline:none; font-size:15px;
+  }
+  select{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04); background:transparent;color:inherit}
+  button.search{
+    padding:12px 16px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#06b6d4);border:none;color:#051021;font-weight:700;cursor:pointer;
+    box-shadow:0 6px 18px rgba(124,58,237,0.18)
+  }
+  .popular{display:flex; gap:8px; flex-wrap:wrap;margin-top:14px}
+  .chip{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.03);color:var(--muted);font-weight:600;cursor:pointer}
+  .side-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); padding:18px;border-radius:12px}
+  .price-list{display:flex;flex-direction:column;gap:10px}
+  .price-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02)}
+  .muted{color:var(--muted);font-size:13px}
+  footer{padding:22px;text-align:center;color:var(--muted)}
+  .promo{display:flex;gap:12px;align-items:center}
+  .promo .badge{background:rgba(124,58,237,0.12);padding:8px;border-radius:8px;color:var(--accent);font-weight:700}
+  .mini-actions{display:flex;gap:10px}
+  /* responsive */
+  @media (max-width:880px){
+    .hero{grid-template-columns:1fr; padding:18px}
+    header{padding:16px}
+    .container{padding:12px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" onclick="goTo('index.html')">
+    <div class="mark">D</div>
+    <div>
+      <div style="font-weight:800;font-size:18px">Domainly</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">Search • Register • Manage</div>
+    </div>
+  </div>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="manage.html">Manage</a>
+    <a href="checkout.html">Cart</a>
+  </nav>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <div class="search-box">
+      <h1>Find the perfect domain name</h1>
+      <p class="lead">Search millions of domains — .com, .net, .org and more. Fast availability check with mock results.</p>
+
+      <div class="search-row">
+        <input id="domainInput" type="text" placeholder="Enter domain name (e.g. yourbrand)" />
+        <select id="tldSelect">
+          <option value=".com">.com</option>
+          <option value=".net">.net</option>
+          <option value=".org">.org</option>
+          <option value=".io">.io</option>
+          <option value=".app">.app</option>
+          <option value=".co">.co</option>
+        </select>
+        <button class="search" onclick="checkDomain()">Search</button>
+      </div>
+
+      <div class="popular" style="margin-top:16px">
+        <div class="chip" onclick="quick('.com')">.com</div>
+        <div class="chip" onclick="quick('.io')">.io</div>
+        <div class="chip" onclick="quick('.app')">.app</div>
+        <div class="chip" onclick="quick('.co')">.co</div>
+        <div class="chip" onclick="quick('.net')">.net</div>
+        <div class="chip" onclick="quick('.org')">.org</div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:10px;align-items:center;justify-content:space-between">
+        <div class="promo">
+          <div class="badge">50% OFF</div>
+          <div style="margin-left:6px">
+            <div style="font-weight:700">New TLD Promo</div>
+            <div class="muted" style="font-size:13px">First year on selected extensions.</div>
+          </div>
+        </div>
+        <div class="mini-actions">
+          <button onclick="goTo('dashboard.html')" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:8px;color:var(--muted);cursor:pointer">My Domains</button>
+          <button onclick="goTo('checkout.html')" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:8px;color:var(--muted);cursor:pointer">Cart (<span id="cartCount">0</span>)</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="side-card">
+      <h3 style="margin:0 0 8px">Popular Pricing</h3>
+      <div class="price-list">
+        <div class="price-item"><div><strong>.com</strong> <div class="muted">Most popular</div></div><div style="font-weight:800">$12.99/yr</div></div>
+        <div class="price-item"><div><strong>.io</strong> <div class="muted">For tech startups</div></div><div style="font-weight:800">$39.99/yr</div></div>
+        <div class="price-item"><div><strong>.co</strong> <div class="muted">Brandable</div></div><div style="font-weight:800">$19.99/yr</div></div>
+        <div class="price-item"><div><strong>.app</strong> <div class="muted">App-focused</div></div><div style="font-weight:800">$14.99/yr</div></div>
+      </div>
+
+      <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:14px 0;border-radius:2px" />
+      <div>
+        <div style="font-weight:700">Why Domainly?</div>
+        <div class="muted" style="margin-top:6px;font-size:13px">Modern UI, instant checks, easy management. (This is a demo with mock behaviour.)</div>
+      </div>
+    </aside>
+  </section>
+
+  <section style="margin-top:18px;display:grid;grid-template-columns:1fr 320px;gap:18px">
+    <div style="background:var(--card);padding:18px;border-radius:12px">
+      <h3 style="margin:0 0 8px">Tips for choosing a great domain</h3>
+      <ul class="muted" style="margin:0;padding-left:18px;line-height:1.8">
+        <li>Keep it short and memorable.</li>
+        <li>Prefer .com for global reach.</li>
+        <li>Avoid hyphens and numbers where possible.</li>
+      </ul>
+    </div>
+
+    <div style="background:var(--card);padding:18px;border-radius:12px">
+      <h3 style="margin:0 0 8px">Quick tools</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button onclick="goTo('results.html?example=example.com')" style="padding:10px;border-radius:8px;border:none;cursor:pointer">Try Example Search</button>
+        <button onclick="goTo('dashboard.html')" style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;cursor:pointer">Open Dashboard</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>© <span id="year"></span> Domainly — mock platform demo</div>
+</footer>
+
+<script>
+  // small bootstrap for localStorage models
+  document.getElementById('year').textContent = new Date().getFullYear();
+  function goTo(url){ window.location.href = url; }
+
+  function quick(tld){
+    const input = document.getElementById('domainInput');
+    input.value = 'yourbrand';
+    document.getElementById('tldSelect').value = tld;
+  }
+
+  // cart counting
+  function updateCartCount(){
+    const cart = JSON.parse(localStorage.getItem('domainly_cart')||'[]');
+    document.getElementById('cartCount').textContent = cart.length;
+  }
+  updateCartCount();
+
+  // domain check -> redirect results page with query
+  function checkDomain(){
+    const name = document.getElementById('domainInput').value.trim();
+    const tld = document.getElementById('tldSelect').value;
+    if(!name){ alert('Please enter a domain name to search.'); return; }
+    const domain = (name.includes('.')? name : name + tld).toLowerCase();
+    // pass domain via query string
+    window.location.href = 'results.html?domain=' + encodeURIComponent(domain);
+  }
+
+  // initialize demo registered domains if not present
+  (function initDemo(){
+    if(!localStorage.getItem('domainly_registered')){
+      const demo = [
+        {domain:'example.com',expires: new Date(Date.now()+1000*60*60*24*90).toISOString(),status:'active'},
+        {domain:'coolsite.io',expires: new Date(Date.now()+1000*60*60*24*365).toISOString(),status:'active'}
+      ];
+      localStorage.setItem('domainly_registered', JSON.stringify(demo));
+    }
+    if(!localStorage.getItem('domainly_cart')){
+      localStorage.setItem('domainly_cart', JSON.stringify([]));
+    }
+  })();
+</script>
+</body>
+</html>
